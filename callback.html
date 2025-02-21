@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Redirección de Spotify</title>
+  <script>
+    // Extraer el token de acceso de la URL
+    const hash = window.location.hash.substring(1);
+    const params = new URLSearchParams(hash);
+    const access_token = params.get('access_token');
+
+    if (access_token) {
+      // Redirigir de vuelta a la página principal con el token
+      window.location.href = `http://localhost:5500/index.html#access_token=${access_token}`;
+    } else {
+      alert('Error al autenticarse con Spotify.');
+    }
+  </script>
+</head>
+<body>
+  <p>Redirigiendo...</p>
+</body>
+</html>

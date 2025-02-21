@@ -1,0 +1,750 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mis 10 canciones más escuchadas - Persona 3 Style</title>
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@400;700&display=swap');
+    
+    :root {
+      --persona-blue: #00adef;
+      --persona-dark-blue: #0054a6;
+      --persona-yellow: #ffff00;
+      --persona-red: #e60012;
+      --persona-dark: #131721;
+      --persona-white: #f1f1f1;
+    }
+    
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    
+    body {
+      font-family: 'Roboto Condensed', sans-serif;
+      background-color: var(--persona-dark);
+      color: var(--persona-white);
+      background-image: url('/api/placeholder/1920/1080');
+      background-size: cover;
+      background-position: center;
+      background-blend-mode: multiply;
+      min-height: 100vh;
+      padding: 20px;
+    }
+    
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 20px;
+      position: relative;
+    }
+    
+    h1 {
+      font-size: 2.5rem;
+      color: var(--persona-blue);
+      text-transform: uppercase;
+      margin-bottom: 20px;
+      letter-spacing: 2px;
+      text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+      border-left: 5px solid var(--persona-yellow);
+      padding-left: 15px;
+    }
+    
+    .auth-container {
+      display: flex;
+      justify-content: center;
+      margin: 30px 0;
+    }
+    
+    button {
+      background-color: var(--persona-blue);
+      color: var(--persona-white);
+      border: none;
+      padding: 12px 25px;
+      font-size: 1rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      border-radius: 0;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 3px 3px 0 var(--persona-yellow);
+    }
+    
+    button:hover {
+      background-color: var(--persona-dark-blue);
+      transform: translateY(-2px);
+    }
+    
+    button:active {
+      transform: translateY(0);
+      box-shadow: 1px 1px 0 var(--persona-yellow);
+    }
+    
+    #mostrar-cola {
+      background-color: var(--persona-red);
+      box-shadow: 3px 3px 0 var(--persona-yellow);
+    }
+    
+    #mostrar-cola:hover {
+      background-color: #c50010;
+    }
+    
+    ul {
+      list-style-type: none;
+      padding: 0;
+    }
+    
+    li {
+      margin: 15px 0;
+      padding: 0;
+      background-color: rgba(19, 23, 33, 0.85);
+      border-left: 4px solid var(--persona-blue);
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    li:hover {
+      transform: translateX(5px);
+      border-left-color: var(--persona-yellow);
+    }
+    
+    li:before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, var(--persona-blue) 0%, transparent 100%);
+      opacity: 0.1;
+      z-index: 0;
+    }
+    
+    .song-item {
+      display: flex;
+      align-items: center;
+      padding: 15px;
+      position: relative;
+      z-index: 1;
+      flex-wrap: wrap;
+    }
+    
+    .song-number {
+      font-size: 1.5rem;
+      color: var(--persona-yellow);
+      font-weight: bold;
+      width: 40px;
+      text-align: center;
+    }
+    
+    .song-image {
+      width: 70px;
+      height: 70px;
+      margin-right: 20px;
+      border: 2px solid var(--persona-blue);
+      position: relative;
+    }
+    
+    .song-image img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    
+    .song-image:after {
+      content: '';
+      position: absolute;
+      top: -5px;
+      right: -5px;
+      width: 20px;
+      height: 20px;
+      background-color: var(--persona-yellow);
+      z-index: -1;
+    }
+    
+    .song-info {
+      flex-grow: 1;
+    }
+    
+    .song-title {
+      font-size: 1.2rem;
+      font-weight: bold;
+      margin-bottom: 5px;
+      color: var(--persona-white);
+    }
+    
+    .song-artist {
+      font-size: 0.9rem;
+      color: var(--persona-blue);
+    }
+    
+    .prioridad-container {
+      display: flex;
+      align-items: center;
+      margin-left: 20px;
+      position: relative;
+    }
+    
+    .prioridad-container label {
+      font-size: 0.9rem;
+      margin-right: 10px;
+      color: var(--persona-yellow);
+    }
+    
+    .select-prioridad {
+      background-color: var(--persona-dark);
+      color: var(--persona-white);
+      border: 2px solid var(--persona-blue);
+      padding: 5px 10px;
+      font-family: 'Roboto Condensed', sans-serif;
+      position: relative;
+      cursor: pointer;
+      appearance: none;
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      padding-right: 30px;
+    }
+    
+    .select-prioridad:focus {
+      outline: none;
+      border-color: var(--persona-yellow);
+    }
+    
+    .prioridad-container:after {
+      content: '▼';
+      position: absolute;
+      right: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--persona-blue);
+      pointer-events: none;
+      font-size: 0.8rem;
+    }
+   
+    .select-prioridad option {
+      background-color: var(--persona-dark);
+      color: var(--persona-white);
+    }
+    
+    .song-actions {
+      display: flex;
+      gap: 10px;
+      margin-left: 20px;
+    }
+    
+    .song-actions button {
+      padding: 8px 12px;
+      font-size: 0.8rem;
+    }
+    
+    .add-btn {
+      background-color: var(--persona-blue);
+      box-shadow: 2px 2px 0 var(--persona-yellow);
+    }
+    
+    .remove-btn {
+      background-color: var(--persona-red);
+      box-shadow: 2px 2px 0 var(--persona-yellow);
+    }
+    
+    .footer {
+      margin-top: 40px;
+      font-size: 0.8rem;
+      text-align: center;
+      color: rgba(241, 241, 241, 0.7);
+    }
+    
+    .popup-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.8);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 100;
+    }
+    
+    .popup-content {
+      background-color: var(--persona-dark);
+      border-left: 5px solid var(--persona-yellow);
+      max-width: 90%;
+      width: 600px;
+      max-height: 80vh;
+      overflow-y: auto;
+      position: relative;
+      animation: slideIn 0.3s ease-out;
+    }
+    
+    @keyframes slideIn {
+      from {
+        transform: translateY(-20px);
+        opacity: 0;
+      }
+      to {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+    
+    .popup-header {
+      background-color: var(--persona-blue);
+      padding: 15px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .popup-title {
+      color: var(--persona-white);
+      font-size: 1.3rem;
+      text-transform: uppercase;
+      font-weight: bold;
+    }
+    
+    .popup-close {
+      background: none;
+      border: none;
+      color: var(--persona-white);
+      font-size: 1.5rem;
+      cursor: pointer;
+      padding: 0;
+      margin: 0;
+      box-shadow: none;
+    }
+    
+    .popup-body {
+      padding: 20px;
+    }
+    
+    .queue-list {
+      list-style-type: none;
+      padding: 0;
+    }
+    
+    .queue-item {
+      display: flex;
+      align-items: center;
+      padding: 10px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    .queue-number {
+      color: var(--persona-yellow);
+      font-weight: bold;
+      margin-right: 15px;
+      font-size: 1.2rem;
+      width: 30px;
+      text-align: center;
+    }
+    
+    .queue-info {
+      flex-grow: 1;
+    }
+    
+    .queue-title {
+      font-weight: bold;
+      color: var(--persona-white);
+    }
+    
+    .queue-artist {
+      font-size: 0.9rem;
+      color: var(--persona-blue);
+    }
+    
+    .empty-queue {
+      padding: 30px;
+      text-align: center;
+      color: rgba(255, 255, 255, 0.7);
+      font-style: italic;
+    }
+    
+    .priority-indicator {
+      display: inline-block;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      margin-right: 8px;
+    }
+    
+    .priority-high {
+      background-color: var(--persona-red);
+      box-shadow: 0 0 5px var(--persona-red);
+    }
+    
+    .priority-medium {
+      background-color: var(--persona-yellow);
+      box-shadow: 0 0 5px var(--persona-yellow);
+    }
+    
+    .priority-low {
+      background-color: var(--persona-blue);
+      box-shadow: 0 0 5px var(--persona-blue);
+    }
+    
+    /* Responsive styles */
+    @media (max-width: 768px) {
+      h1 {
+        font-size: 1.8rem;
+      }
+      
+      .song-item {
+        flex-wrap: wrap;
+      }
+      
+      .prioridad-container {
+        margin-left: 40px;
+        margin-top: 10px;
+        margin-bottom: 10px;
+        width: 100%;
+      }
+      
+      .song-actions {
+        width: 100%;
+        margin-left: 40px;
+        justify-content: flex-start;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Dark Hour Playlist</h1>
+    
+    <div class="auth-container">
+      <button id="autorizar">Autorizar Spotify</button>
+      <button id="mostrar-cola" style="display: none;">Mostrar Cola</button>
+    </div>
+    
+    <ul id="lista-canciones"></ul>
+    
+    <div class="footer">
+      Basado en Persona 3 Reload - S.E.E.S. Music Collection
+    </div>
+  </div>
+  
+  <div class="popup-overlay" id="popup-queue">
+    <div class="popup-content">
+      <div class="popup-header">
+        <div class="popup-title">Cola de reproducción</div>
+        <button class="popup-close" id="popup-close">&times;</button>
+      </div>
+      <div class="popup-body" id="popup-body">
+      </div>
+    </div>
+  </div>
+
+  <script>
+    class ColaPrioridad {
+      constructor() {
+        this.items = []; 
+      }
+
+
+      enqueue(cancion, prioridad) {
+        const elemento = { cancion, prioridad };
+        let agregado = false;
+
+        for (let i = 0; i < this.items.length; i++) {
+          if (elemento.prioridad < this.items[i].prioridad) {
+            this.items.splice(i, 0, elemento);
+            agregado = true;
+            break;
+          }
+        }
+        if (!agregado) {
+          this.items.push(elemento);
+        }
+      }
+      dequeue() {
+        if (this.isEmpty()) {
+          return null;
+        }
+        return this.items.shift().cancion;
+      }
+
+      mostrar() {
+        return this.items;
+      }
+
+      isEmpty() {
+        return this.items.length === 0;
+      }
+
+      eliminar(cancion) {
+        this.items = this.items.filter(item => item.cancion.id !== cancion.id);
+      }
+    }
+    const cola = new ColaPrioridad();
+
+    
+//INGRESAR EL CLIENT ID DE SPOTIFY
+    const client_id = 'Client_ID'; 
+    const redirect_uri = 'http://localhost:5500/callback.html'; 
+
+    const popupOverlay = document.getElementById('popup-queue');
+    const popupBody = document.getElementById('popup-body');
+    const popupClose = document.getElementById('popup-close');
+
+    const autenticarSpotify = () => {
+      const auth_url = `https://accounts.spotify.com/authorize?response_type=token&client_id=${client_id}&scope=user-top-read&redirect_uri=${redirect_uri}`;
+      window.location.href = auth_url;
+    };
+
+    const getTopTracks = async (access_token) => {
+      try {
+        const response = await axios.get('https://api.spotify.com/v1/me/top/tracks', {
+          headers: {
+            Authorization: `Bearer ${access_token}`,
+          },
+          params: {
+            limit: 10,
+            time_range: 'short_term',
+          },
+        });
+        return response.data.items;
+      } catch (error) {
+        console.error('Error al obtener las canciones:', error.response ? error.response.data : error.message);
+        return [];
+      }
+    };
+
+    const mostrarCanciones = (canciones) => {
+      const listaCanciones = document.getElementById('lista-canciones');
+      listaCanciones.innerHTML = '';
+
+      canciones.forEach((cancion, index) => {
+        const li = document.createElement('li');
+        const songItem = document.createElement('div');
+        songItem.className = 'song-item';
+
+        const songNumber = document.createElement('div');
+        songNumber.className = 'song-number';
+        songNumber.textContent = (index + 1).toString().padStart(2, '0');
+
+        const songImageContainer = document.createElement('div');
+        songImageContainer.className = 'song-image';
+        const imagen = document.createElement('img');
+        imagen.src = cancion.album.images[0].url;
+        imagen.alt = `Portada de ${cancion.name}`;
+        songImageContainer.appendChild(imagen);
+
+        const songInfo = document.createElement('div');
+        songInfo.className = 'song-info';
+        const songTitle = document.createElement('div');
+        songTitle.className = 'song-title';
+        songTitle.textContent = cancion.name;
+        const songArtist = document.createElement('div');
+        songArtist.className = 'song-artist';
+        songArtist.textContent = cancion.artists[0].name;
+        songInfo.appendChild(songTitle);
+        songInfo.appendChild(songArtist);
+
+        const prioridadContainer = document.createElement('div');
+        prioridadContainer.className = 'prioridad-container';
+        const labelPrioridad = document.createElement('label');
+        labelPrioridad.textContent = 'Prioridad:';
+        labelPrioridad.setAttribute('for', `prioridad-${index}`);
+        const selectPrioridad = document.createElement('select');
+        selectPrioridad.id = `prioridad-${index}`;
+        selectPrioridad.className = 'select-prioridad';
+
+        const opciones = [
+          { valor: 1, texto: 'Alta' },
+          { valor: 2, texto: 'Media' },
+          { valor: 3, texto: 'Baja' },
+        ];
+
+        opciones.forEach(opcion => {
+          const option = document.createElement('option');
+          option.value = opcion.valor;
+          option.textContent = opcion.texto;
+          selectPrioridad.appendChild(option);
+        });
+
+        prioridadContainer.appendChild(labelPrioridad);
+        prioridadContainer.appendChild(selectPrioridad);
+
+        // Acciones para la canción
+        const songActions = document.createElement('div');
+        songActions.className = 'song-actions';
+        const botonAgregar = document.createElement('button');
+        botonAgregar.textContent = 'Agregar';
+        botonAgregar.className = 'add-btn';
+        botonAgregar.addEventListener('click', () => {
+          const prioridad = parseInt(selectPrioridad.value);
+          cola.enqueue(cancion, prioridad); 
+          
+          let textoSeveridad = 'Baja';
+          if (prioridad === 1) textoSeveridad = 'Alta';
+          else if (prioridad === 2) textoSeveridad = 'Media';
+          
+          mostrarNotificacion(`"${cancion.name}" agregada con prioridad ${textoSeveridad}`);
+        });
+
+        const botonEliminar = document.createElement('button');
+        botonEliminar.textContent = 'Quitar';
+        botonEliminar.className = 'remove-btn';
+        botonEliminar.addEventListener('click', () => {
+          cola.eliminar(cancion); // Eliminar de la cola
+          mostrarNotificacion(`"${cancion.name}" eliminada de la cola.`);
+        });
+
+        songActions.appendChild(botonAgregar);
+        songActions.appendChild(botonEliminar);
+
+        songItem.appendChild(songNumber);
+        songItem.appendChild(songImageContainer);
+        songItem.appendChild(songInfo);
+        songItem.appendChild(prioridadContainer);
+        songItem.appendChild(songActions);
+        li.appendChild(songItem);
+        listaCanciones.appendChild(li);
+      });
+
+      document.getElementById('mostrar-cola').style.display = 'block';
+    };
+
+    const mostrarNotificacion = (mensaje) => {
+      const notificacion = document.createElement('div');
+      notificacion.style.position = 'fixed';
+      notificacion.style.bottom = '20px';
+      notificacion.style.right = '20px';
+      notificacion.style.backgroundColor = 'var(--persona-blue)';
+      notificacion.style.color = 'white';
+      notificacion.style.padding = '15px 20px';
+      notificacion.style.borderLeft = '5px solid var(--persona-yellow)';
+      notificacion.style.zIndex = '1000';
+      notificacion.style.opacity = '0';
+      notificacion.style.transform = 'translateY(20px)';
+      notificacion.style.transition = 'all 0.3s ease';
+      notificacion.textContent = mensaje;
+      
+      document.body.appendChild(notificacion);
+      
+      setTimeout(() => {
+        notificacion.style.opacity = '1';
+        notificacion.style.transform = 'translateY(0)';
+      }, 10);
+      
+      setTimeout(() => {
+        notificacion.style.opacity = '0';
+        notificacion.style.transform = 'translateY(20px)';
+        
+        setTimeout(() => {
+          document.body.removeChild(notificacion);
+        }, 300);
+      }, 3000);
+    };
+
+    const getPriorityClass = (priority) => {
+      switch(priority) {
+        case 1: return 'priority-high';
+        case 2: return 'priority-medium';
+        case 3: return 'priority-low';
+        default: return 'priority-low';
+      }
+    };
+
+    const getPriorityText = (priority) => {
+      switch(priority) {
+        case 1: return 'Alta';
+        case 2: return 'Media';
+        case 3: return 'Baja';
+        default: return 'Desconocida';
+      }
+    };
+
+    const mostrarCola = () => {
+      const elementosEnCola = cola.mostrar();
+      
+      if (elementosEnCola.length === 0) {
+        popupBody.innerHTML = '<div class="empty-queue">Tu cola está vacía. Agrega canciones para reproducirlas más tarde.</div>';
+      } else {
+        const queueList = document.createElement('ul');
+        queueList.className = 'queue-list';
+        
+        elementosEnCola.forEach((item, index) => {
+          const {cancion, prioridad} = item;
+          const queueItem = document.createElement('li');
+          queueItem.className = 'queue-item';
+          
+          const queueNumber = document.createElement('div');
+          queueNumber.className = 'queue-number';
+          queueNumber.textContent = (index + 1).toString().padStart(2, '0');
+          
+          const priorityIndicator = document.createElement('span');
+          priorityIndicator.className = `priority-indicator ${getPriorityClass(prioridad)}`;
+          priorityIndicator.title = `Prioridad: ${getPriorityText(prioridad)}`;
+          
+          const queueInfo = document.createElement('div');
+          queueInfo.className = 'queue-info';
+          
+          const queueTitle = document.createElement('div');
+          queueTitle.className = 'queue-title';
+          queueTitle.textContent = cancion.name;
+          
+          const queueArtist = document.createElement('div');
+          queueArtist.className = 'queue-artist';
+          queueArtist.innerHTML = `${cancion.artists[0].name} <span style="opacity: 0.7; font-size: 0.9em; margin-left: 10px;">(Prioridad: ${getPriorityText(prioridad)})</span>`;
+          
+          queueInfo.appendChild(queueTitle);
+          queueInfo.appendChild(queueArtist);
+          
+          queueItem.appendChild(queueNumber);
+          queueItem.appendChild(priorityIndicator);
+          queueItem.appendChild(queueInfo);
+          queueList.appendChild(queueItem);
+        });
+        
+        popupBody.innerHTML = '';
+        popupBody.appendChild(queueList);
+      }
+      
+      popupOverlay.style.display = 'flex';
+    };
+
+    const main = async () => {
+      const hash = window.location.hash.substring(1);
+      const params = new URLSearchParams(hash);
+      const access_token = params.get('access_token');
+
+      if (!access_token) {
+        document.getElementById('autorizar').style.display = 'block';
+        return;
+      }
+
+      const canciones = await getTopTracks(access_token);
+      if (canciones.length === 0) {
+        mostrarNotificacion('No se pudieron obtener las canciones.');
+        return;
+      }
+
+      mostrarCanciones(canciones);
+    };
+
+    document.getElementById('autorizar').addEventListener('click', autenticarSpotify);
+    document.getElementById('mostrar-cola').addEventListener('click', mostrarCola);
+    popupClose.addEventListener('click', () => {
+      popupOverlay.style.display = 'none';
+    });
+
+    popupOverlay.addEventListener('click', (event) => {
+      if (event.target === popupOverlay) {
+        popupOverlay.style.display = 'none';
+      }
+    });
+
+    main();
+  </script>
+</body>
+</html>
